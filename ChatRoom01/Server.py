@@ -3,7 +3,6 @@ import socket
 import threading
 from time import gmtime, strftime
 
-
 class Server:
     def __init__(self, host, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -21,7 +20,10 @@ class Server:
             buf = connection.recv(1024).decode()
             if buf == '1':
                 # start a thread for new connection
-                mythread = threading.Thread(target=self.subThreadIn, args=(connection, connection.fileno()))
+                connection.send(b'Welcome to chat room!\nPleace input your nick name:')
+                nickname = connection.recv(1024).decode()
+                connection.send(b'Now lets chat'+nickname)
+                mythread = threading.Thread(target=self.subThreadIn, args=(connection, connection.fileno(),nickname))
                 mythread.setDaemon(True)
                 mythread.start()
 
@@ -32,21 +34,22 @@ class Server:
             pass
 
     # send whatToSay to every except people in exceptNum
-    def tellOthers(self, exceptNum, whatToSay):
+    def tellOthers(self, exceptNum, whatToSay,nickname):
         for c in self.mylist:
             if c.fileno() != exceptNum:
+                massage = (nickname+ ":" +whatToSay);
                 try:
-                    c.send(whatToSay.encode())
+                    c.send(massage.encode())
                 except:
                     pass
 
-    def subThreadIn(self, myconnection, connNumber):
+    def subThreadIn(self, myconnection, connNumber,nickname):
         self.mylist.append(myconnection)
         while True:
             try:
                 recvedMsg = myconnection.recv(1024).decode()
                 if recvedMsg:
-                    self.tellOthers(connNumber, recvedMsg)
+                    self.tellOthers(connNumber, recvedMsg,nickname)
                 else:
                     pass
 
@@ -61,7 +64,7 @@ class Server:
 
 
 def main():
-    s = Server('localhost', 5550)
+    s = Server('140.138.145.24', 5550)
     while True:
         s.checkConnection()
 
