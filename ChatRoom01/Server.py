@@ -30,6 +30,54 @@ class Server:
         except:
             pass
 
+    def subThreadIn(self, myconnection, connNumber):
+        myconnection.send(b'Welcome to chat room!\nPleace input your nick name:')
+        nickname = myconnection.recv(1024).decode()
+        massage = ("Now lets chat, " +nickname)
+        self.mylist.append(myconnection)
+        myconnection.send(massage.encode())
+        massage1 = ("\t\tSYSTEM: "+nickname+ " in the chat room")
+        global a
+        a+=1
+        for c in self.mylist:
+            if c.fileno() != connNumber:
+                try:
+                    c.send(massage1.encode())
+                except:
+                    pass
+                massage2 = ("\t\tSYSTEM: " + str(a) + " people in the chat room")
+                c.send(massage2.encode())
+        while True:
+            try:
+                recvedMsg = myconnection.recv(1024).decode()
+                if recvedMsg:
+                    self.tellOthers(connNumber, recvedMsg,nickname)
+                else:
+                    pass
+
+            except (OSError, ConnectionResetError):
+                try:
+                    # 將總數-1
+                    a-=1
+                    # 在server 印出誰離開
+                    print('One connecting is leave', myconnection.getsockname(), myconnection.fileno())
+                    #在其他client 告知誰離開
+                    for c in self.mylist:
+                        if c.fileno() != connNumber:
+                            try:
+                                c.send(b'\t\tSYSTEM: ' + nickname.encode()+b' is leave chat room')
+                                c.send(b'\t\tSYSTEM: ' + str(a).encode() +b' people in the chat room')
+                            except:
+                                pass
+
+
+                    self.mylist.remove(myconnection)
+                except:
+                    pass
+
+                myconnection.close()
+                return
+
     # send whatToSay to every except people in exceptNum
     def tellOthers(self, exceptNum, whatToSay,nickname):
         for c in self.mylist:
@@ -42,43 +90,8 @@ class Server:
                 except:
                     pass
 
-    def subThreadIn(self, myconnection, connNumber):
-        self.mylist.append(myconnection)
-        myconnection.send(b'Welcome to chat room!\nPleace input your nick name:')
-        nickname = myconnection.recv(1024).decode()
-        massage = ("Now lets chat, " +nickname)
-        myconnection.send(massage.encode())
-        massage1 = ("SYSTEM: "+nickname+ " in the chat room")
-        global a
-        a+=1
-        for c in self.mylist:
-            if c.fileno() != connNumber:
-                try:
-                    c.send(massage1.encode())
-                except:
-                    pass
-                massage2 = ("SYSTEM: " + str(a) + " people in the chat room")
-                c.send(massage2.encode())
-        while True:
-            try:
-                recvedMsg = myconnection.recv(1024).decode()
-                if recvedMsg:
-                    self.tellOthers(connNumber, recvedMsg,nickname)
-                else:
-                    pass
-
-            except (OSError, ConnectionResetError):
-                try:
-                    self.mylist.remove(myconnection)
-                except:
-                    pass
-
-                myconnection.close()
-                return
-
-
 def main():
-    s = Server('140.138.145.24', 5550)
+    s = Server('127.0.0.1', 5550)
     while True:
         s.checkConnection()
 
