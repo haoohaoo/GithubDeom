@@ -10,6 +10,13 @@ class MainWindow(QWidget):
         self.link_to_server('127.0.0.1', 5550) # 連線~~
         self.setupUi()
         self.show()
+        th1 = threading.Thread(target=self.sendThreadFunc)
+        th2 = threading.Thread(target=self.recvThreadFunc)
+        threads = [th1, th2]
+        for t in threads:
+            t.setDaemon(True)
+            t.start()
+        t.join
 
     # 連線~~
     def link_to_server(self, host, port):
@@ -17,6 +24,32 @@ class MainWindow(QWidget):
         self.sock = sock
         self.sock.connect((host, port))
         self.sock.send(b'1')
+
+    def sendThreadFunc(self):
+        while True:
+            try:
+                myword = input()
+                self.sock.send(myword.encode())
+            except ConnectionAbortedError:
+                print('Server closed this connection!')
+            except ConnectionResetError:
+                print('Server is closed!')
+
+
+
+
+    def recvThreadFunc(self):
+        while True:
+            try:
+                otherword = self.sock.recv(1024) # socket.recv(recv_size)
+                #self.showText(otherword.decode())
+                #self.showchat.setText(otherword.decode())
+                print(otherword.decode())
+            except ConnectionAbortedError:
+                print('Server closed this connection!')
+
+            except ConnectionResetError:
+                print('Server is closed!')
 
 
     def hello(self):
@@ -60,7 +93,7 @@ class MainWindow(QWidget):
 
         self.setLayout(grid)
         self.button_Login.clicked.connect(self.login)
-        self.button_cancel.clicked.connect(self.cancel)
+        self.button_cancel.clicked.connect(self.showText)
 
     def login(self):
 
@@ -70,8 +103,8 @@ class MainWindow(QWidget):
         self.button_cancel.setEnabled(True)
         self.button_Login.setEnabled(False)
 
-    def showText(self,text):
-        self.showchat.setText(self.showchat.text() + text)
+    def showText(self):
+        self.showchat.setText(self.chat.text())
 
 
 
@@ -110,14 +143,14 @@ class Client:
 
 
 def main():
-    c = Client('127.0.0.1', 5550)
+    '''c = Client('127.0.0.1', 5550)
     th1 = threading.Thread(target=c.sendThreadFunc)
     th2 = threading.Thread(target=c.recvThreadFunc)
     threads = [th1, th2]
     for t in threads:
         t.setDaemon(True)
         t.start()
-    t.join
+    t.join'''
 
 
 if __name__ == "__main__":
