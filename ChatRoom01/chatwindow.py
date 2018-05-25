@@ -22,13 +22,14 @@ class MainWindow(QWidget):
 
         self.label = QLabel()
         self.label.setText("Nickname: ")
-        self.label.resize(100,100)
+
 
         self.button_Login = QPushButton()
         self.button_Login.setText("Login")
 
         self.button_cancel = QPushButton()
         self.button_cancel.setText("Send")
+
         self.name = QLineEdit()
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
@@ -39,9 +40,9 @@ class MainWindow(QWidget):
         grid.addWidget(self.label, 1, 0)
         grid.addWidget(self.name, 1, 1)
         grid.addWidget(self.button_Login, 1, 2)
-        grid.addWidget(self.showchat, 2, 0)
-        grid.addWidget(self.chat, 4, 0)
-        grid.addWidget(self.button_cancel, 6, 0)
+        grid.addWidget(self.showchat, 3, 0, 3, 3)
+        grid.addWidget(self.chat, 5, 0, 5, 3)
+        grid.addWidget(self.button_cancel, 6, 0, 6, 3)
 
 
         self.setLayout(grid)
