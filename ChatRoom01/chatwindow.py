@@ -19,21 +19,31 @@ class MainWindow(QWidget):
     def setupUi(self):
         self.resize(500,500)
         self.setWindowTitle("Chat Application")
-
+        yesno = 0 #0 login yes  cancel no
         self.label = QLabel()
         self.label.setText("Nickname: ")
 
 
         self.button_Login = QPushButton()
-        self.button_Login.setText("Login")
 
+        self.button_Login.setText("Login")
         self.button_cancel = QPushButton()
+
         self.button_cancel.setText("Send")
 
         self.name = QLineEdit()
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
+        #textWord = self.button_Login.text()
+        if(yesno == 0):
+            self.button_cancel = QPushButton("Send") # b3不可按
+            self.button_cancel.setEnabled(False)
+            self.button_Login.setEnabled(True)
 
+        if(yesno == 1):
+            self.button_Login = QPushButton("Login") # b3不可按
+            self.button_Login.setEnabled(False)
+            self.button_cancel.setEnabled(True)
 
         grid = QGridLayout()
         grid.setSpacing(10)
