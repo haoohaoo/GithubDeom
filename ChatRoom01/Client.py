@@ -4,6 +4,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QFormLayout, QHBoxLayout, QGridLayout, QTextEdit
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, QApplication)
 
+
 class MainWindow(QWidget):
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -35,16 +36,13 @@ class MainWindow(QWidget):
             except ConnectionResetError:
                 print('Server is closed!')
 
-
-
-
     def recvThreadFunc(self):
         while True:
             try:
                 otherword = self.sock.recv(1024) # socket.recv(recv_size)
-                #self.showText(otherword.decode())
-                #self.showchat.setText(otherword.decode())
-                print(otherword.decode())
+                t = otherword.decode()
+                self.showchat.append(t)
+                #print(otherword.decode())
             except ConnectionAbortedError:
                 print('Server closed this connection!')
 
@@ -96,20 +94,25 @@ class MainWindow(QWidget):
         self.button_cancel.clicked.connect(self.showText)
 
     def login(self):
-
+        # 取得 輸入的 nickname
         text=self.name.text()
-        self.label.setText(self.label.text() + text)
-        self.label.setEnabled(False)
+        #　設定button 可按與不可按
+        self.name.setEnabled(False)
         self.button_cancel.setEnabled(True)
         self.button_Login.setEnabled(False)
+        #　將值傳給server
+        self.sock.send(text.encode())
 
     def showText(self):
-        self.showchat.setText(self.chat.text())
+        #　將值傳給server
+        self.sock.send(self.chat.text().encode())
+        #  同時將自己輸入的值印在chat上
+        self.showchat.append("\t\t" + self.chat.text() + " : You")
 
 
 
 
-class Client:
+'''class Client:
     def __init__(self, host, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock = sock
@@ -138,23 +141,11 @@ class Client:
                 print('Server closed this connection!')
 
             except ConnectionResetError:
-                print('Server is closed!')
+                print('Server is closed!')'''
 
-
-
-def main():
-    '''c = Client('127.0.0.1', 5550)
-    th1 = threading.Thread(target=c.sendThreadFunc)
-    th2 = threading.Thread(target=c.recvThreadFunc)
-    threads = [th1, th2]
-    for t in threads:
-        t.setDaemon(True)
-        t.start()
-    t.join'''
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     myPanel = MainWindow()
-    main()
     sys.exit(app.exec_())
