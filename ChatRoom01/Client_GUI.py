@@ -60,7 +60,7 @@ class MainWindow(QWidget):
         self.resize(500,400)
         self.setWindowTitle("Chat Application")
 
-        col=QColorDialog.getColor()
+        #col=QColorDialog.getColor()
         #self.setAutoFillBackground(true)
 
         self.label = QLabel()
@@ -79,8 +79,8 @@ class MainWindow(QWidget):
         self.button_cance_updatePassword.setText("update Password")       #update Password Button
 
         #self.button_cancel = QPushButton("Send") # b3不可按
-        #self.button_cancel.setEnabled(False)
-        #self.button_Login.setEnabled(True)
+        self.button_cancel.setEnabled(False)
+        self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
         self.Password = QLineEdit()
