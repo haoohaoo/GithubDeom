@@ -60,12 +60,14 @@ class MainWindow(QWidget):
         self.resize(500,500)
         self.setWindowTitle("Chat Application")
 
-        self.label = QLabel()
+        self.label = QLabel()               #show name lable
         self.label.setText("Nickname: ")
 
+        self.labe2 = QLabel()               #show Password lable
+        self.labe2.setText("Password: ")
 
         self.button_Login = QPushButton()
-        self.button_Login.setText("Login")
+        self.button_Login.setText("Add")
 
         self.button_cancel = QPushButton()
         self.button_cancel.setText("Send")
@@ -75,18 +77,26 @@ class MainWindow(QWidget):
         self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
+        self.Password = QLineEdit()
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
 
+        self.passwprd = QLineEdit()
 
         grid = QGridLayout()
-        grid.setSpacing(10)
-        grid.addWidget(self.label, 1, 0)
-        grid.addWidget(self.name, 1, 1)
-        grid.addWidget(self.button_Login, 1, 2)
-        grid.addWidget(self.showchat, 3, 0, 3, 3)
-        grid.addWidget(self.chat, 5, 0, 5, 3)
-        grid.addWidget(self.button_cancel, 6, 0, 6, 3)
+        grid.setSpacing(12)
+        grid.addWidget(self.label, 0, 1)    #name_lable
+        grid.addWidget(self.name, 0, 2)     #name input
+
+        grid.addWidget(self.labe2, 0, 3)    #password_lable
+        grid.addWidget(self.Password, 0, 4) #password_lable
+
+        grid.addWidget(self.button_Login, 1, 1,1,4) #login_button
+
+        grid.addWidget(self.showchat, 3, 0, 3, 5)   #showchat
+        grid.addWidget(self.chat, 5, 0, 5, 5)
+
+        grid.addWidget(self.button_cancel, 6, 0, 6, 5)
 
 
         self.setLayout(grid)
