@@ -57,56 +57,57 @@ class MainWindow(QWidget):
         self.line_hello.setText("")
 
     def setupUi(self):
-
-        people=0
-        self.resize(500,400)
+        self.resize(500,500)
         self.setWindowTitle("Chat Application")
 
         self.labe_Number_of_people = QLabel()
         self.labe_Number_of_people.setText("目前聊天室有" +"人")         #目前人數lable
 
         self.label = QLabel()
-        self.label.setText("Nickname: ")        #show name lable
+        self.label.setText("Nickname: ")
 
         self.labe2 = QLabel()
         self.labe2.setText("Change Password: ") #show Password lable
 
+
         self.button_Login = QPushButton()
-        self.button_Login.setText("Add")
+        self.button_Login.setText("Login")
+        self.button_Login.setStyleSheet("background-color: yellow")#button yellow
+        self.change_P = QPushButton()
+        self.change_P.setText("update password")
+        self.change_P.setStyleSheet("background-color: red")#button yellow
 
         self.button_cancel = QPushButton()
-        self.button_cancel.setText("send")
+        self.button_cancel.setText("Send")
 
-        self.button_cance_updatePassword = QPushButton()
-        self.button_cance_updatePassword.setText("update Password")       #update Password Button
-
-        #self.button_cancel = QPushButton("Send") # b3不可按
+        self.button_cancel = QPushButton("Send") # b3不可按
+        self.button_cancel.setStyleSheet("background-color: yellow")#button yellow
         self.button_cancel.setEnabled(False)
         self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
-        self.Password = QLineEdit()
-        self.Change_Password = QLineEdit()
-
+        self.passwd = QLineEdit()
+        self.passwd.setEchoMode(QLineEdit.Password)#讓輸入的字變成 ***
+        self.change_passwd = QLineEdit()
+        self.change_passwd.setEchoMode(QLineEdit.Password)#讓輸入的字變成 ***
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
 
+
         grid = QGridLayout()
         grid.setSpacing(12)
-        grid.addWidget(self.labe_Number_of_people, 0, 2)        #秀出目前人數
-        grid.addWidget(self.label, 2, 1)        #name_lable
-        grid.addWidget(self.name, 2, 2)         #name input
-        grid.addWidget(self.Password, 2, 3)     #password_input
-        grid.addWidget(self.button_Login, 2,4)  #login_button
+        grid.addWidget(self.labe_Number_of_people, 0, 1)        #秀出目前人數
+        grid.addWidget(self.label, 1, 0)
+        grid.addWidget(self.name, 1, 1)
+        grid.addWidget(self.passwd, 1, 2)
+        grid.addWidget(self.button_Login, 1, 3)
+        grid.addWidget(self.labe2, 2, 0)
+        grid.addWidget(self.change_passwd, 2, 2)
+        grid.addWidget(self.change_P, 2, 3)
+        grid.addWidget(self.showchat, 4, 0, 3, 3)
+        grid.addWidget(self.chat, 6, 0, 5, 3)
+        grid.addWidget(self.button_cancel, 7, 0, 6, 3)
 
-
-        grid.addWidget(self.labe2, 3, 1)    #password_lable
-        grid.addWidget(self.Change_Password, 3, 2)     #Change_Password_TextEdit
-        grid.addWidget(self.button_cance_updatePassword, 3,3)  #login_button
-
-        grid.addWidget(self.showchat, 4, 0, 6, 5)   #showchat
-        grid.addWidget(self.chat, 9, 0, 5, 5)
-        grid.addWidget(self.button_cancel, 10, 0, 5, 5)
 
         self.setLayout(grid)
         self.button_Login.clicked.connect(self.login)
@@ -137,7 +138,6 @@ class MainWindow(QWidget):
         self.sock = sock
         self.sock.connect((host, port))
         self.sock.send(b'1')
-
     def sendThreadFunc(self):
         while True:
             try:
@@ -147,10 +147,6 @@ class MainWindow(QWidget):
                 print('Server closed this connection!')
             except ConnectionResetError:
                 print('Server is closed!')
-
-
-
-
     def recvThreadFunc(self):
         while True:
             try:
@@ -158,7 +154,6 @@ class MainWindow(QWidget):
                 print(otherword.decode())
             except ConnectionAbortedError:
                 print('Server closed this connection!')
-
             except ConnectionResetError:
                 print('Server is closed!')'''
 
