@@ -1,7 +1,7 @@
 import socket
 import threading
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QFormLayout, QHBoxLayout, QGridLayout, QTextEdit,QApplication,QWidget,QColorDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QFormLayout, QHBoxLayout, QGridLayout, QTextEdit
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, QApplication)
 
 
@@ -57,54 +57,48 @@ class MainWindow(QWidget):
         self.line_hello.setText("")
 
     def setupUi(self):
-        self.resize(500,400)
+        self.resize(500,500)
         self.setWindowTitle("Chat Application")
 
-        #col=QColorDialog.getColor()
-        #self.setAutoFillBackground(true)
-
         self.label = QLabel()
-        self.label.setText("Nickname: ")        #show name lable
+        self.label.setText("Nickname: ")
 
         self.labe2 = QLabel()
         self.labe2.setText("Change Password: ") #show Password lable
 
+
         self.button_Login = QPushButton()
-        self.button_Login.setText("Add")
+        self.button_Login.setText("Login")
+        self.change_P = QPushButton()
+        self.change_P.setText("update password")
 
         self.button_cancel = QPushButton()
-        self.button_cancel.setText("send")
+        self.button_cancel.setText("Send")
 
-        self.button_cance_updatePassword = QPushButton()
-        self.button_cance_updatePassword.setText("update Password")       #update Password Button
-
-        #self.button_cancel = QPushButton("Send") # b3不可按
+        self.button_cancel = QPushButton("Send") # b3不可按
         self.button_cancel.setEnabled(False)
         self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
-        self.Password = QLineEdit()
-        self.Change_Password = QLineEdit()
-
+        self.passwd = QLineEdit()
+        self.change_passwd = QLineEdit()
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
 
+
         grid = QGridLayout()
-        grid.setSpacing(12)
+        grid.setSpacing(10)
+        grid.addWidget(self.label, 1, 0)
+        grid.addWidget(self.name, 1, 1)
+        grid.addWidget(self.passwd, 1, 2)
+        grid.addWidget(self.button_Login, 1, 3)
+        grid.addWidget(self.labe2, 2, 0)
+        grid.addWidget(self.change_passwd, 2, 2)
+        grid.addWidget(self.change_P, 2, 3)
+        grid.addWidget(self.showchat, 4, 0, 3, 3)
+        grid.addWidget(self.chat, 6, 0, 5, 3)
+        grid.addWidget(self.button_cancel, 7, 0, 6, 3)
 
-        grid.addWidget(self.label, 1, 1)        #name_lable
-        grid.addWidget(self.name, 1, 2)         #name input
-        grid.addWidget(self.Password, 1, 3)     #password_input
-        grid.addWidget(self.button_Login, 1,4)  #login_button
-
-
-        grid.addWidget(self.labe2, 2, 1)    #password_lable
-        grid.addWidget(self.Change_Password, 2, 2)     #Change_Password_TextEdit
-        grid.addWidget(self.button_cance_updatePassword, 2,3)  #login_button
-
-        grid.addWidget(self.showchat, 4, 0, 6, 5)   #showchat
-        grid.addWidget(self.chat, 9, 0, 5, 5)
-        grid.addWidget(self.button_cancel, 10, 0, 5, 5)
 
         self.setLayout(grid)
         self.button_Login.clicked.connect(self.login)
