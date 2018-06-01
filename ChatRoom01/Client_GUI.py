@@ -1,7 +1,7 @@
 import socket
 import threading
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QFormLayout, QHBoxLayout, QGridLayout, QTextEdit,QColorDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QFormLayout, QHBoxLayout, QGridLayout, QTextEdit,QApplication,QWidget,QColorDialog
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, QApplication)
 
 
@@ -60,6 +60,9 @@ class MainWindow(QWidget):
         self.resize(500,400)
         self.setWindowTitle("Chat Application")
 
+        col=QColorDialog.getColor()
+        #self.setAutoFillBackground(true)
+
         self.label = QLabel()
         self.label.setText("Nickname: ")        #show name lable
 
@@ -70,7 +73,7 @@ class MainWindow(QWidget):
         self.button_Login.setText("Add")
 
         self.button_cancel = QPushButton()
-        self.button_cancel.setText("Del")
+        self.button_cancel.setText("send")
 
         self.button_cance_updatePassword = QPushButton()
         self.button_cance_updatePassword.setText("update Password")       #update Password Button
@@ -100,8 +103,8 @@ class MainWindow(QWidget):
         grid.addWidget(self.button_cance_updatePassword, 2,3)  #login_button
 
         grid.addWidget(self.showchat, 4, 0, 6, 5)   #showchat
-        #grid.addWidget(self.chat, 5, 0, 5, 5)
-        grid.addWidget(self.button_cancel, 8, 0, 5, 5)
+        grid.addWidget(self.chat, 9, 0, 5, 5)
+        grid.addWidget(self.button_cancel, 10, 0, 5, 5)
 
         self.setLayout(grid)
         self.button_Login.clicked.connect(self.login)
