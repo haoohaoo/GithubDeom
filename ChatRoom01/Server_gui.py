@@ -3,52 +3,122 @@ import threading
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QFormLayout, QHBoxLayout, QGridLayout, QTextEdit
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, QApplication)
+#from InitDB import DataBaseChatRoom as db
+import socket
+import threading
+import time
+from pymongo import MongoClient
+from time import gmtime, strftime
+a = 0
+class Server:
+    def __init__(self, host, port):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock = sock
+        self.sock.bind((host, port))
+        self.sock.listen(5)
+        print('Server', socket.gethostbyname(host), 'listening ...')
+        self.mylist = list()
 
+    def checkConnection(self):
+        connection, addr = self.sock.accept()
+        print('Accept a new connection', connection.getsockname(), connection.fileno())
+        try:
+            buf = connection.recv(1024).decode()
+            if buf == '1':
+                # start a thread for new connection
+                mythread = threading.Thread(target=self.subThreadIn, args=(connection, connection.fileno()))
+                mythread.setDaemon(True)
+                mythread.start()
+
+            else:
+                connection.send(b'please go out!')
+                connection.close()
+        except:
+            pass
+
+    def subThreadIn(self, myconnection, connNumber):
+        myconnection.send(b'Welcome to chat room!\nPleace input your nick name:')
+        nickname = myconnection.recv(1024).decode()
+        massage = ("Now lets chat, " +nickname)
+        self.mylist.append(myconnection)
+        myconnection.send(massage.encode())
+        massage1 = ("\t\tSYSTEM: "+nickname+ " in the chat room")
+        global a
+        a+=1
+        for c in self.mylist:
+            if c.fileno() != connNumber:
+                try:
+                    c.send(massage1.encode())
+                except:
+                    pass
+                massage2 = ("\t\tSYSTEM: " + str(a) + " people in the chat room")
+                c.send(massage2.encode())
+        while True:
+            try:
+                recvedMsg = myconnection.recv(1024).decode()
+                if recvedMsg:
+                    self.tellOthers(connNumber, recvedMsg,nickname)
+                else:
+                    pass
+
+            except (OSError, ConnectionResetError):
+                try:
+                    # 將總數-1
+                    a-=1
+                    # 在server 印出誰離開
+                    print('One connecting is leave', myconnection.getsockname(), myconnection.fileno())
+                    #在其他client 告知誰離開
+                    for c in self.mylist:
+                        if c.fileno() != connNumber:
+                            try:
+                                c.send(b'\t\tSYSTEM: ' + nickname.encode()+b' is leave chat room')
+                                c.send(b'\t\tSYSTEM: ' + str(a).encode() +b' people in the chat room')
+                            except:
+                                pass
+
+
+                    self.mylist.remove(myconnection)
+                except:
+                    pass
+
+                myconnection.close()
+                return
+
+    # send whatToSay to every except people in exceptNum
+    def tellOthers(self, exceptNum, whatToSay,nickname):
+        for c in self.mylist:
+            if c.fileno() != exceptNum:
+                st = time.localtime(time.time())
+                times = time.strftime('[%H:%M:%S]', st)
+                massage = (nickname+ ":" +whatToSay + "     " + times)
+                try:
+                    c.send(massage.encode())
+                except:
+                    pass
+
+# def main():
+#     s = Server('140.138.145.25', 5550)
+#     while True:
+#         s.checkConnection()
+
+##########################
 
 class MainWindow(QWidget):
     def __init__(self):
         super(self.__class__, self).__init__()
-        self.link_to_server('127.0.0.1', 5550) # 連線~~
         self.setupUi()
         self.show()
-        th1 = threading.Thread(target=self.sendThreadFunc)
-        th2 = threading.Thread(target=self.recvThreadFunc)
-        threads = [th1, th2]
-        for t in threads:
-            t.setDaemon(True)
-            t.start()
-        t.join
+        th1 = threading.Thread(target=self.connect)
+        th1.setDaemon(True)
+        th1.start()
+        th1.join
 
-    # 連線~~
-    def link_to_server(self, host, port):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock = sock
-        self.sock.connect((host, port))
-        self.sock.send(b'1')
-
-    def sendThreadFunc(self):
-        while True:
-            try:
-                myword = input()
-                self.sock.send(myword.encode())
-            except ConnectionAbortedError:
-                print('Server closed this connection!')
-            except ConnectionResetError:
-                print('Server is closed!')
-
-    def recvThreadFunc(self):
-        while True:
-            try:
-                otherword = self.sock.recv(1024) # socket.recv(recv_size)
-                t = otherword.decode()
-                self.showchat.append(t)
-                #print(otherword.decode())
-            except ConnectionAbortedError:
-                print('Server closed this connection!')
-
-            except ConnectionResetError:
-                print('Server is closed!')
-
+        self.client = MongoClient('localhost', 27017)  # 比较常用
+        self.database = self.client["ChatRoom"]  # SQL: Database Name
+        self.collection = self.database["user"]
+        # s = Server('140.138.145.25', 5550)
+        # while True:
+        #     s.checkConnection() # 連線~~
 
     def hello(self):
         self.line_hello.setText("hello")
@@ -106,15 +176,19 @@ class MainWindow(QWidget):
         self.button_Login.clicked.connect(self.login)
         self.button_cancel.clicked.connect(self.showText)
 
+
     def login(self):
         # 取得 輸入的 nickname
-        text=self.name.text()
+        text1=self.name.text()
+        text2=self.passwprd.text()
+        self.collection.insert_one({'uname': text1, 'upwd': text2})
+
         #　設定button 可按與不可按
-        self.name.setEnabled(False)
-        self.button_cancel.setEnabled(True)
-        self.button_Login.setEnabled(False)
-        #　將值傳給server
-        self.sock.send(text.encode())
+        # self.name.setEnabled(False)
+        # self.button_cancel.setEnabled(True)
+        # self.button_Login.setEnabled(False)
+        # #　將值傳給server
+        # self.sock.send(text.encode())
 
     def showText(self):
         #　將值傳給server
@@ -122,35 +196,63 @@ class MainWindow(QWidget):
         #  同時將自己輸入的值印在chat上
         self.showchat.append("\t\t" + self.chat.text() + " : You")
 
+    def connect(self):
+        s = Server('140.138.145.25', 5550)
+        s.checkConnection() # 連線~~
 
-
-
-'''class Client:
-    def __init__(self, host, port):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock = sock
-        self.sock.connect((host, port))
-        self.sock.send(b'1')
-    def sendThreadFunc(self):
-        while True:
-            try:
-                myword = input()
-                self.sock.send(myword.encode())
-            except ConnectionAbortedError:
-                print('Server closed this connection!')
-            except ConnectionResetError:
-                print('Server is closed!')
-    def recvThreadFunc(self):
-        while True:
-            try:
-                otherword = self.sock.recv(1024) # socket.recv(recv_size)
-                print(otherword.decode())
-            except ConnectionAbortedError:
-                print('Server closed this connection!')
-            except ConnectionResetError:
-                print('Server is closed!')'''
-
-
+# class DataBaseChatRoom:
+#     def __init__(self):
+#         self.client = MongoClient('localhost', 27017)  # 比较常用
+#         self.database = self.client["ChatRoom"]  # SQL: Database Name
+#         self.collection = self.database["user"]  # SQL: Table Name
+#
+#     def loadData(self):
+#         pass
+#         return None
+#
+#     # delete user by uname
+#     # dbChatRoom.deleteUser(['A'])
+#     def deleteUser(self, username):
+#         self.collection.DataBaseChatRoom.delete_one({'uname':username})
+#         pass
+#         return 'successful'
+#
+#     # insert user
+#     # dbChatRoom.insertUser(uname='A', upwd='A')
+#     def insertUser(self, username, userkey):
+#         self.collection.insert_one({'uname': username, 'upwd': userkey})
+#         pass
+#         return 'successful'
+#
+#     def updataUser(self, username, userkey):
+#         self.collection.ChatRoom.user.save({'uname': username, 'upwd': userkey})
+#         pass
+#         return 'successful'
+#
+#     # check checkUserExist
+#     def checkUserExist(self, uname='A'):
+#         pass
+#         return False
+#
+#     # query user bu uname
+#     # dbChatRoom.queryByuname(uname='A', upwd='A')
+#     def queryByuname(self, uname='A', upwd='A'):
+#         pass
+#         return False
+#
+#     # Init database
+#     # dbChatRoom.Initdatabase()
+#     def Initdatabase(self):
+#         userList = []
+#         # userList.append({'uname': 'A', 'upwd': 'A'})
+#         # userList.append({'uname': 'B', 'upwd': 'B'})
+#         # userList.append({'uname': 'C', 'upwd': 'C'})
+#         # userList.append({'uname': 'D', 'upwd': 'D'})
+#         # userList.append({'uname': 'E', 'upwd': 'E'})
+#         self.collection.insert_many(userList)
+#
+#     def colseClient(self):
+#         self.client.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
