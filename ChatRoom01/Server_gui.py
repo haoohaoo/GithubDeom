@@ -66,10 +66,13 @@ class MainWindow(QWidget):
         self.labe2 = QLabel()               #show Password lable
         self.labe2.setText("Password: ")
 
+
         self.button_Login = QPushButton()
+        self.button_Login.setStyleSheet("background-color: yellow")#button yellow
         self.button_Login.setText("Add")
 
         self.button_cancel = QPushButton()
+        self.button_cancel.setStyleSheet("background-color: yellow")#button yellow
         self.button_cancel.setText("Del")
 
         #self.button_cancel = QPushButton("Send") # b3不可按
@@ -78,6 +81,8 @@ class MainWindow(QWidget):
 
         self.name = QLineEdit()
         self.Password = QLineEdit()
+        self.Password.setEchoMode(QLineEdit.Password)#讓輸入的字變成 ***
+
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
 
@@ -126,7 +131,6 @@ class MainWindow(QWidget):
         self.sock = sock
         self.sock.connect((host, port))
         self.sock.send(b'1')
-
     def sendThreadFunc(self):
         while True:
             try:
@@ -136,10 +140,6 @@ class MainWindow(QWidget):
                 print('Server closed this connection!')
             except ConnectionResetError:
                 print('Server is closed!')
-
-
-
-
     def recvThreadFunc(self):
         while True:
             try:
@@ -147,7 +147,6 @@ class MainWindow(QWidget):
                 print(otherword.decode())
             except ConnectionAbortedError:
                 print('Server closed this connection!')
-
             except ConnectionResetError:
                 print('Server is closed!')'''
 
