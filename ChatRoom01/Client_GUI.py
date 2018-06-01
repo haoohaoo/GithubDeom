@@ -69,19 +69,24 @@ class MainWindow(QWidget):
 
         self.button_Login = QPushButton()
         self.button_Login.setText("Login")
+        self.button_Login.setStyleSheet("background-color: yellow")#button yellow
         self.change_P = QPushButton()
         self.change_P.setText("update password")
+        self.change_P.setStyleSheet("background-color: red")#button yellow
 
         self.button_cancel = QPushButton()
         self.button_cancel.setText("Send")
 
         self.button_cancel = QPushButton("Send") # b3不可按
+        self.button_cancel.setStyleSheet("background-color: yellow")#button yellow
         self.button_cancel.setEnabled(False)
         self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
         self.passwd = QLineEdit()
+        self.passwd.setEchoMode(QLineEdit.Password)#讓輸入的字變成 ***
         self.change_passwd = QLineEdit()
+        self.change_passwd.setEchoMode(QLineEdit.Password)#讓輸入的字變成 ***
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
 
@@ -129,7 +134,6 @@ class MainWindow(QWidget):
         self.sock = sock
         self.sock.connect((host, port))
         self.sock.send(b'1')
-
     def sendThreadFunc(self):
         while True:
             try:
@@ -139,10 +143,6 @@ class MainWindow(QWidget):
                 print('Server closed this connection!')
             except ConnectionResetError:
                 print('Server is closed!')
-
-
-
-
     def recvThreadFunc(self):
         while True:
             try:
@@ -150,7 +150,6 @@ class MainWindow(QWidget):
                 print(otherword.decode())
             except ConnectionAbortedError:
                 print('Server closed this connection!')
-
             except ConnectionResetError:
                 print('Server is closed!')'''
 
