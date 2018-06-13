@@ -128,7 +128,7 @@ class MainWindow(QWidget):
     def login(self):
         # 取得 輸入的 nickname
         text1 = self.name.text()
-        text2=self.passwd.text()
+        text2 = self.passwd.text()
         find = False
         for user in self.collection.find():
             if(user['uname']==text1):
@@ -142,8 +142,12 @@ class MainWindow(QWidget):
                     self.labe_Number_of_people.setText("目前聊天室有1人")
                 else:
                     self.showchat.append("密碼輸入錯誤!")
+                    self.name.setText("")
+                    self.passwd.setText("")
         if(find == False):
             self.showchat.append("無此使用者!")
+            self.name.setText("")
+            self.passwd.setText("")
 
     def showText(self):
         #　將值傳給server
@@ -152,6 +156,7 @@ class MainWindow(QWidget):
         st = time.localtime(time.time())
         times = time.strftime('[%H:%M:%S]', st)
         self.showchat.append("\t\t" + self.chat.text() + " : You " + times)
+        self.chat.setText("")
 
     def change_pwd(self):
         if(self.button_Login.isEnabled()):
@@ -162,41 +167,6 @@ class MainWindow(QWidget):
             text2 = self.change_passwd.text()
             user['upwd'] = text2
             self.collection.save(user)
-
-        '''for user in self.collection.find():
-            self.checkBox = QtWidgets.QCheckBox(self.groupBox)
-            self.checkBox.setGeometry(QtCore.QRect(30, 0 + i * 30, 85, 19))
-            self.checkBox.setObjectName(user['uname'])
-            self.checkBox.setText(user['uname'])'''
-
-
-
-
-
-'''class Client:
-    def __init__(self, host, port):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock = sock
-        self.sock.connect((host, port))
-        self.sock.send(b'1')
-    def sendThreadFunc(self):
-        while True:
-            try:
-                myword = input()
-                self.sock.send(myword.encode())
-            except ConnectionAbortedError:
-                print('Server closed this connection!')
-            except ConnectionResetError:
-                print('Server is closed!')
-    def recvThreadFunc(self):
-        while True:
-            try:
-                otherword = self.sock.recv(1024) # socket.recv(recv_size)
-                print(otherword.decode())
-            except ConnectionAbortedError:
-                print('Server closed this connection!')
-            except ConnectionResetError:
-                print('Server is closed!')'''
 
 
 
