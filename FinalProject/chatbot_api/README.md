@@ -1,7 +1,8 @@
 # Python chatterbot 說明
 
 ### 需要裝的套件
-chatterbot
+chatterbot (聊天機器人用)
+hanziconv (簡繁字體轉換用)
 
 ### 使用教學
 - Train\_model\_built.py：會根據匯入的語言庫建立出模型
