@@ -9,4 +9,8 @@
   佳震：
     擁有自動學習的Python機器人：https://kantai235.github.io/2017/03/16/ChatterBotTeaching/
     ChatterBot Documentation ： http://chatterbot.readthedocs.io/en/stable/
+<<<<<<< HEAD
     hanziconv Documentation： https://github.com/berniey/hanziconv
+=======
+    hanziconv Documentation： https://github.com/berniey/hanziconv
+>>>>>>> 5b6acff887d226bbdb36a0ae99bfed1eb6ec2280
