@@ -1,7 +1,7 @@
 # Python chatterbot 說明
 
 ### 需要裝的套件
-chatterbot (聊天機器人用)
+chatterbot (聊天機器人用)<br>
 hanziconv (簡繁字體轉換用)
 
 ### 使用教學
