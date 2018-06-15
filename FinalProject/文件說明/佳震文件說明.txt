@@ -1,0 +1,26 @@
+# 佳震文件說明
+
+>>用了什麼技術、什麼概念、達到那些目的、使用了那些部分來達到我們chat room的那些功能
+
+技術：
+1. chatterbot
+2. hanziconv
+
+概念：
+在chatterbot中，是使用到機械學習的方式去建立機器人模型
+在我們的程式中，使用到了三個訓練模組，如下：
+chatterbot.corpus.chinese
+chatterbot.corpus.chinese.greetings
+chatterbot.corpus.chinese.conversations
+功能上分別是簡體中文的基本語言庫、問候語言庫和對話語言庫
+跑完此三個訓練集後，程式就可以進行基本的對話了
+
+使用到的部分：
+使用了chatterbot中的get_response(str) function，只要將
+我們的問話放入str，餵給get_response()，他就會回傳回應訊息了
+但因為是簡體中文續鍊集，回文也是簡體中文，所以我又透過
+hanziconv的api來將簡體中文轉為繁體中文，使用的function是
+toTraditional(str)
+
+達到的功能：
+動態的回應使用著隨機的問題，並以繁體中文output
