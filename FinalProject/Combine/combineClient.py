@@ -1,13 +1,59 @@
 import socket
 import threading
 import sys
-import PyQt5
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QFormLayout, QHBoxLayout, QGridLayout, QTextEdit
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, QApplication)
 #from pymongo import MongoClient
 import time
 
+
+class CheckLeaveWindows(QWidget):
+
+    def __init__(self):
+        super().__init__()
+
+        self.initUI()
+
+
+    def initUI(self):
+        # 設定文字和按鈕
+        okButton = QPushButton("確定")
+        cancelButton = QPushButton("取消")
+        leavemsg = QLabel("\t確定要離開聊天室嗎?")
+
+
+        #設定layput方式
+        hbox = QHBoxLayout()
+        hbox.addWidget(okButton)
+        hbox.addWidget(cancelButton)
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(leavemsg)
+        vbox = QVBoxLayout()
+        vbox.addLayout(hbox2);
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+
+        #設定視窗參數
+        self.setFixedSize(300, 150)
+        self.setWindowTitle(' ')
+
+        okButton.clicked.connect(self.checkLeave)
+        cancelButton.clicked.connect(self.checkNLeave)
+
+    # 確定要離開
+    def checkLeave(self,evnt):
+        global isLeave
+        isLeave = 1
+        myPanel.close()
+        self.close()
+
+
+
+    # 不要離開
+    def checkNLeave(self,evnt):
+        self.close()
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -144,9 +190,22 @@ class MainWindow(QWidget):
         self.showchat.append("\t" + times + self.chat.text() + " : You " )
         self.chat.setText("")
 
+    def closeEvent(self, event):
+        if(isLeave == 1):
+            event.accept()
+        else:
+            LWindows.show()
+            print("Leave event")
+            print(isLeave)
+            event.ignore()
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     myPanel = MainWindow()
+
+    # 確認關閉視窗 用~~
+    LWindows = CheckLeaveWindows()
+    isLeave = 0
+
     sys.exit(app.exec_())
