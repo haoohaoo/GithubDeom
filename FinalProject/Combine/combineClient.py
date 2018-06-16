@@ -8,13 +8,58 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, 
 import time
 
 
-class CheckLeaveWindows(QWidget):
-
+class RemindWindows(QWidget):
     def __init__(self):
         super().__init__()
-
         self.initUI()
 
+    def initUI(self):
+        # 設定文字和按鈕
+        outdoorButton = QPushButton("出去吃")
+        selfCookButton = QPushButton("自己煮")
+        cancelButton = QPushButton("取消")
+        leavemsg = QLabel("\t12點該吃飯囉！\n      想出去吃還是自己煮呢？")
+
+
+        #設定layput方式
+        hbox = QHBoxLayout()
+        hbox.addWidget(outdoorButton)
+        hbox.addWidget(selfCookButton)
+        hbox.addWidget(cancelButton)
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(leavemsg)
+        vbox = QVBoxLayout()
+        vbox.addLayout(hbox2);
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+
+        #設定視窗參數
+        self.setFixedSize(300, 150)
+        self.setWindowTitle(' ')
+
+        outdoorButton.clicked.connect(self.checkOutdoor)
+        selfCookButton.clicked.connect(self.checkSelfCook)
+        cancelButton.clicked.connect(self.checkCancel)
+
+    def showWindows(self):
+        self.show()
+    # 確認出去吃
+    def checkOutdoor(self,evnt):
+        self.close()
+
+    # 確認自己煮
+    def checkSelfCook(self,evnt):
+        self.close()
+
+    # 取消
+    def checkCancel(self,evnt):
+        self.close()
+
+class CheckLeaveWindows(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
     def initUI(self):
         # 設定文字和按鈕
@@ -48,8 +93,6 @@ class CheckLeaveWindows(QWidget):
         isLeave = 1
         myPanel.close()
         self.close()
-
-
 
     # 不要離開
     def checkNLeave(self,evnt):
@@ -113,6 +156,8 @@ class MainWindow(QWidget):
                 print('Server is closed!')
 
 
+
+
     def setupUi(self):
         self.resize(500,500)
         self.setWindowTitle("ChatRoom")
@@ -134,14 +179,14 @@ class MainWindow(QWidget):
         self.button_clear.setText("Clear")
         self.button_clear.setStyleSheet("background-color: rgb(255, 189, 255)")
 
-        self.button_cancel = QPushButton()
+        self.button_send = QPushButton()
 
 
-        self.button_cancel = QPushButton("Send") # b3不可按
-        self.button_cancel.setStyleSheet("background-color: rgb(153, 153, 153)")
-        self.button_cancel.setText("Send")
-        self.button_cancel.setStyleSheet("color: rgb(255, 189, 255)")
-        self.button_cancel.setEnabled(False)
+        self.button_send = QPushButton("Send") # b3不可按
+        self.button_send.setStyleSheet("background-color: rgb(153, 153, 153)")
+        self.button_send.setText("Send")
+        self.button_send.setStyleSheet("color: rgb(255, 189, 255)")
+        self.button_send.setEnabled(False)
         self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
@@ -165,12 +210,12 @@ class MainWindow(QWidget):
         grid.addWidget(self.button_clear, 1, 4)
         grid.addWidget(self.showchat, 4, 0, 3, 5)
         grid.addWidget(self.chat, 6, 0, 3, 4)
-        grid.addWidget(self.button_cancel, 7, 4, 1, 1)
+        grid.addWidget(self.button_send, 7, 4, 1, 1)
 
 
         self.setLayout(grid)
         self.button_Login.clicked.connect(self.login)
-        self.button_cancel.clicked.connect(self.showText)
+        self.button_send.clicked.connect(self.showText)
 
         # set black background
         #p = self.palette()
@@ -182,7 +227,7 @@ class MainWindow(QWidget):
         text1 = self.name.text()
         find = False
         self.name.setEnabled(False)
-        self.button_cancel.setEnabled(True)
+        self.button_send.setEnabled(True)
         self.button_Login.setEnabled(False)
         self.sock.send(text1.encode())
 
@@ -207,12 +252,13 @@ class MainWindow(QWidget):
             event.ignore()
 
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     myPanel = MainWindow()
-
     # 確認關閉視窗 用~~
     LWindows = CheckLeaveWindows()
     isLeave = 0
-
+    # 午餐晚餐提醒視窗
+    remindWindows = RemindWindows()
     sys.exit(app.exec_())
