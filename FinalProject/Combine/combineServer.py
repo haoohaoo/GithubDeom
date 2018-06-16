@@ -11,6 +11,7 @@ wb = open_workbook('FoodData.xlsx')#read
 sheel_1 = wb.sheet_by_index(0)# 獲取工作表的方法之一，用下標。
 
 a = 0
+temp_a = 0
 
 class Server:
     def __init__(self, host, port):
@@ -49,7 +50,9 @@ class Server:
 
         massage1 = ("SYSTEM: "+nickname+ " in the chat room")
         global a
+        global temp_a
         a += 1
+        temp_a = a
         myconnection.send(("SYSTEM: " + str(a) + " people in the chat room").encode())
         for c in self.mylist:
             if c.fileno() != connNumber:
@@ -84,10 +87,15 @@ class Server:
                     #在其他client 告知誰離開
                     for c in self.mylist:
                         if c.fileno() != connNumber:
+                            print("OK!")
                             try:
-                                c.send("SYSTEM: " + nickname.encode()+" is leave chat room")
-                                c.send(("SYSTEM: " + str(a) + " people in the chat room").encode())
+                                print("in try")
+                                msg = "SYSTEM: " + nickname+" is leave chat room"
+                                c.send(msg.encode())
+                                msg = "SYSTEM: " + str(a) + " people in the chat room"
+                                c.send(msg.encode())
                             except:
+                                print("in except")
                                 pass
 
 

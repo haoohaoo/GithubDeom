@@ -139,6 +139,7 @@ class MainWindow(QWidget):
                 t = otherword.decode()
                 self.showchat.append(t)
                 if(" people in the chat room"in t):
+                    print("有人進出")
                     size = len(t)-32
                     a = 0
                     for i in range(size):
