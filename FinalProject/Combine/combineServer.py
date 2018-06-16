@@ -9,8 +9,9 @@ from xlrd import open_workbook
 import random
 wb = open_workbook('FoodData.xlsx')#read
 sheel_1 = wb.sheet_by_index(0)# 獲取工作表的方法之一，用下標。
-#end fooddata
+
 a = 0
+
 class Server:
     def __init__(self, host, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -63,57 +64,15 @@ class Server:
             try:
 
                 recvedMsg = myconnection.recv(1024).decode()#抓輸入
-                #print (recvedMsg)
-                #print (len(recvedMsg))
 
                 if recvedMsg:
                     self.tellOthers(connNumber, recvedMsg,nickname)
                 else:
                     pass
 
-                idontknow="吃什麼?"
-                whatingredients="食材是?"
-                howtocook="做法是?"
-                x= recvedMsg.find(idontknow,len(recvedMsg)-4)#判斷有沒有"吃什麼?"這個詞
-                y= recvedMsg.find(whatingredients,len(recvedMsg)-4)#判斷有沒有"食材是?"這個詞
-                z= recvedMsg.find(howtocook,len(recvedMsg)-4)#判斷有沒有"做法是?"這個詞
-
-                if x != -1:#output"吃什麼?
-                    p=sheel_1.cell_value(rowx=random.randint(1,100),colx=0 )
-                    myconnection.send( p.encode() )
-                elif y!= -1 :
-                    get = ''
-                    get= recvedMsg[0:len(recvedMsg)-4]
-                    for sheet in wb.sheets():#搜尋excel
-                        for rowidx in range(sheet.nrows):
-                            row = sheet.row(rowidx)
-                            for colidx, cell in enumerate(row):
-                                if cell.value == get:
-                                    print (colidx)
-                                    print(rowidx)
-                                    q=sheel_1.cell_value(rowx=rowidx,colx=1 )
-                                    myconnection.send(q.encode() )#output"食材是?"
-                elif z!=-1 :
-                    gets = ''
-                    gets = recvedMsg[0:len(recvedMsg) - 4]
-                    for sheet in wb.sheets():#搜尋excel
-                        for rowidx in range(sheet.nrows):
-                            row = sheet.row(rowidx)
-                            for colidx, cell in enumerate(row):
-                                if cell.value == gets:
-                                    print (colidx)
-                                    print(rowidx)
-                                    r=sheel_1.cell_value(rowx=rowidx,colx=2 )
-                                    myconnection.send(r.encode() )#output"做法是?"
-                else :
-                    wrong='我的菜單沒有'
-                    myconnection.send(wrong.encode())#output菜單沒有
-                    pass
-
-
-
-
-
+                #如果有人tag小廚師
+                if recvedMsg.find("@小廚師",0,4)!= -1:
+                    self.tellOthers(connNumber, self.littleChef(recvedMsg,myconnection),"小廚師")
 
 
             except (OSError, ConnectionResetError):
@@ -145,11 +104,61 @@ class Server:
             if c.fileno() != exceptNum:
                 st = time.localtime(time.time())
                 times = time.strftime('[%H:%M:%S]', st)
-                massage = (nickname+ ":" +whatToSay + "     " + times)
+                massage = (nickname+ ":  " +whatToSay + "     " + times)
                 try:
                     c.send(massage.encode())
                 except:
                     pass
+
+    # 小廚師回話
+    def littleChef(self,recvedMsg,myconnection):
+        print("in littleChef")
+        idontknow="想吃什麼"
+        whatingredients="食材是"
+        howtocook="做法是"
+        x= recvedMsg.find(idontknow,len(recvedMsg)-5,len(recvedMsg)-1)        #判斷有沒有"想吃什麼?"這個詞
+        y= recvedMsg.find(whatingredients,len(recvedMsg)-4,len(recvedMsg)-1)  #判斷有沒有"食材是?"這個詞
+        z= recvedMsg.find(howtocook,len(recvedMsg)-4,len(recvedMsg)-1)        #判斷有沒有"做法是?"這個詞
+
+        returnValue = ""
+
+        if x != -1:#output"吃什麼?
+            returnValue = sheel_1.cell_value(rowx=random.randint(1,100),colx=0 )
+            #myconnection.send( p.encode() )
+        elif y!= -1 :
+            get = ''
+            get= recvedMsg[4:len(recvedMsg)-4]
+            for sheet in wb.sheets():#搜尋excel
+                for rowidx in range(sheet.nrows):
+                    row = sheet.row(rowidx)
+                    for colidx, cell in enumerate(row):
+                        if cell.value == get:
+                            print (colidx)
+                            print(rowidx)
+                            returnValue=sheel_1.cell_value(rowx=rowidx,colx=1 )
+                            #myconnection.send(q.encode() )#output"食材是?"
+        elif z!=-1 :
+            gets = ''
+            gets = recvedMsg[4:len(recvedMsg) - 4]
+            for sheet in wb.sheets():#搜尋excel
+                for rowidx in range(sheet.nrows):
+                    row = sheet.row(rowidx)
+                    for colidx, cell in enumerate(row):
+                        if cell.value == gets:
+                            print (colidx)
+                            print(rowidx)
+                            returnValue=sheel_1.cell_value(rowx=rowidx,colx=2 )
+        else :
+            returnValue='我的菜單沒有'
+
+         #先送一份給自己
+        st = time.localtime(time.time())
+        times = time.strftime('[%H:%M:%S]', st)
+        massage = ("小廚師"+ ":  " +returnValue + "     " + times)
+        myconnection.send(massage.encode())
+
+        return returnValue
+
 
 def main():
     s = Server('127.0.0.1', 5550)

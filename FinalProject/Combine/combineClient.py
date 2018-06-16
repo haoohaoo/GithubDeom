@@ -135,16 +135,21 @@ class MainWindow(QWidget):
         self.button_clear.setStyleSheet("background-color: rgb(255, 189, 255)")
 
         self.button_cancel = QPushButton()
-        self.button_cancel.setText("Send")
+
 
         self.button_cancel = QPushButton("Send") # b3不可按
-        self.button_cancel.setStyleSheet("background-color: rgb(255, 189, 255)")
+        self.button_cancel.setStyleSheet("background-color: rgb(153, 153, 153)")
+        self.button_cancel.setText("Send")
+        self.button_cancel.setStyleSheet("color: rgb(255, 189, 255)")
         self.button_cancel.setEnabled(False)
         self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
+
+        #設定showchar的滾動條
+        self.showchat.setLineWrapMode(QTextEdit.NoWrap)
 
         #設定顏色
         self.showchat.setStyleSheet("background-color: rgb(255,255,255)")
@@ -188,6 +193,8 @@ class MainWindow(QWidget):
         st = time.localtime(time.time())
         times = time.strftime('[%H:%M:%S]', st)
         self.showchat.append("\t" + times + self.chat.text() + " : You " )
+
+
         self.chat.setText("")
 
     def closeEvent(self, event):
