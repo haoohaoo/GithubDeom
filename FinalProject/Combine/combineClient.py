@@ -248,6 +248,8 @@ class MainWindow(QWidget):
 
     def saveMSG(self):
         global writeMsg
+        print("writeMSG = ")
+        print(writeMsg)
         path = "ChatRoom"
         st = time.localtime(time.time())
         times = time.strftime('%Y_%m_%d_%H_%M', st)
@@ -265,8 +267,6 @@ class MainWindow(QWidget):
             event.accept()
         else:
             LWindows.show()
-            print("Leave event")
-            print(isLeave)
             event.ignore()
 
 

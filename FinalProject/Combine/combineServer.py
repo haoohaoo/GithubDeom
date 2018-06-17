@@ -2,7 +2,8 @@
 import socket
 import threading
 import time
-from time import gmtime, strftime
+from chatterbot import ChatBot
+import random
 
 #fooddata
 from xlrd import open_workbook
@@ -21,6 +22,12 @@ class Server:
         self.sock.listen(5)
         print('Server', socket.gethostbyname(host), 'listening ...')
         self.mylist = list()
+
+        #設定聊天機器人
+        self.chatterbot = ChatBot(
+            'Ron Obvious',
+            trainer = 'chatterbot.trainers.ChatterBotCorpusTrainer'
+        )
 
     def checkConnection(self):
         connection, addr = self.sock.accept()
@@ -63,13 +70,26 @@ class Server:
                 massage2 = ("SYSTEM: " + str(a) + " people in the chat room")
                 c.send(massage2.encode())
 
+        # 開始對話
         while True:
             try:
-
                 recvedMsg = myconnection.recv(1024).decode()#抓輸入
 
                 if recvedMsg:
                     self.tellOthers(connNumber, recvedMsg,nickname)
+
+                    # 將訊息給 bot
+                    botMsg = self.littleBot(recvedMsg)
+                    random_value = random.randint(3, 9)
+                    if random_value % 3 == 0:
+                        #先送一份給自己
+                        st = time.localtime(time.time())
+                        times = time.strftime('[%H:%M:%S]', st)
+                        massage = ("bot"+ ":  " +botMsg + "     " + times)
+                        myconnection.send(massage.encode())
+                        # 傳給其他人
+                        self.tellOthers(connNumber, botMsg,"bot")
+
                 else:
                     pass
 
@@ -167,6 +187,8 @@ class Server:
 
         return returnValue
 
+    def littleBot(self,recvedMsg):
+        return self.chatterbot.get_response(recvedMsg).text
 
 def main():
     s = Server('127.0.0.1', 5550)
