@@ -1,12 +1,15 @@
 import socket
 import threading
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QFormLayout, QHBoxLayout, QGridLayout, QTextEdit
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, QApplication)
-#from pymongo import MongoClient
 import time
 
+
+# 寫檔用
+writeMsg = ""
 
 class RemindWindows(QWidget):
     def __init__(self):
@@ -133,11 +136,13 @@ class MainWindow(QWidget):
                 print('Server is closed!')
 
     def recvThreadFunc(self):
+        global writeMsg
         while True:
             try:
                 otherword = self.sock.recv(1024) # socket.recv(recv_size)
                 t = otherword.decode()
                 self.showchat.append(t)
+                writeMsg += "\n" + t # 寫檔用
                 if(" people in the chat room"in t):
                     print("有人進出")
                     size = len(t)-32
@@ -155,8 +160,6 @@ class MainWindow(QWidget):
 
             except ConnectionResetError:
                 print('Server is closed!')
-
-
 
 
     def setupUi(self):
@@ -239,12 +242,26 @@ class MainWindow(QWidget):
         st = time.localtime(time.time())
         times = time.strftime('[%H:%M:%S]', st)
         self.showchat.append("\t" + times + self.chat.text() + " : You " )
-
-
+        global writeMsg
+        writeMsg += "\n\t" + times + self.chat.text() + " : You "  # 寫檔用
         self.chat.setText("")
+
+    def saveMSG(self):
+        global writeMsg
+        path = "ChatRoom"
+        st = time.localtime(time.time())
+        times = time.strftime('%Y_%m_%d_%H_%M', st)
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        file = open(path + "\\" + times + ".txt", "w")
+        file.writelines(writeMsg)
+        # 關閉檔案
+        file.close()
+
 
     def closeEvent(self, event):
         if(isLeave == 1):
+            self.saveMSG()
             event.accept()
         else:
             LWindows.show()
