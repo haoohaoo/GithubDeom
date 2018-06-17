@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdi
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, QApplication)
 import time
+from PyQt5.QtCore import pyqtSignal
 
 
 # 寫檔用
@@ -105,7 +106,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super(self.__class__, self).__init__()
 
-        self.link_to_server('127.0.0.1', 5550) # 連線~~
+        self.link_to_server('192.168.43.50', 5550) # 連線~~
         self.setupUi()
 
         self.show()
@@ -194,8 +195,12 @@ class MainWindow(QWidget):
         self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
+        self.name.setStyleSheet("color: rgb(192,192,192)")
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
+        self.chat.setStyleSheet("color: rgb(192,192,192)")
+        self.chat.setText("輸入發送內容，空白時無法發送")
+        self.chat.setEnabled(False)
 
         #設定showchar的滾動條
         self.showchat.setLineWrapMode(QTextEdit.NoWrap)
@@ -220,31 +225,48 @@ class MainWindow(QWidget):
         self.setLayout(grid)
         self.button_Login.clicked.connect(self.login)
         self.button_send.clicked.connect(self.showText)
+        self.button_clear.clicked.connect(self.clearName)
+
+        self.name.installEventFilter(self)
+        self.chat.installEventFilter(self)
+        #self.name.clicked.connect(self.nameclear)
+        #self.chat.clicked.connect(self.chatclear)
 
         # set black background
         #p = self.palette()
         #p.setColor(self.backgroundRole(), red)
         self.setStyleSheet("background-color:rgb(153,153,153);")
+        self.show()
 
     def login(self):
         # 取得 輸入的 nickname
         text1 = self.name.text()
-        find = False
-        self.name.setEnabled(False)
-        self.button_send.setEnabled(True)
-        self.button_Login.setEnabled(False)
-        self.sock.send(text1.encode())
+        print("name="+text1)
+        if((len(text1)<=5)&(text1!="")):
+            self.name.setEnabled(False)
+            self.chat.setEnabled(True)
+            self.button_send.setEnabled(True)
+            self.button_clear.setEnabled(False)
+            self.button_Login.setEnabled(False)
+            self.chat.setText("輸入發送內容，空白時無法發送")
+            self.chat.setStyleSheet("color: rgb(192,192,192);background-color: rgb(255,255,255)")
+            self.sock.send(text1.encode())
+        else:
+            nameInputWindow.show()
 
     def showText(self):
         #　將值傳給server
-        self.sock.send(self.chat.text().encode())
-        #  同時將自己輸入的值印在chat上
-        st = time.localtime(time.time())
-        times = time.strftime('[%H:%M:%S]', st)
-        self.showchat.append("\t" + times + self.chat.text() + " : You " )
-        global writeMsg
-        writeMsg += "\n\t" + times + self.chat.text() + " : You "  # 寫檔用
-        self.chat.setText("")
+        if((len(self.chat.text())<=200)&(self.chat.text()!="")):
+            self.sock.send(self.chat.text().encode())
+            #  同時將自己輸入的值印在chat上
+            st = time.localtime(time.time())
+            times = time.strftime('[%H:%M:%S]', st)
+            self.showchat.append("\t" + times + self.chat.text() + " : You " )
+            global writeMsg
+            writeMsg += "\n\t" + times + self.chat.text() + " : You "  # 寫檔用
+            self.chat.setText("")
+        else:
+            inputWindow.show()
 
     def saveMSG(self):
         global writeMsg
@@ -260,6 +282,9 @@ class MainWindow(QWidget):
         # 關閉檔案
         file.close()
 
+    '''def mousePressEvent(self, event):
+        self.name.setText("")'''
+
 
     def closeEvent(self, event):
         if(isLeave == 1):
@@ -269,7 +294,103 @@ class MainWindow(QWidget):
             LWindows.show()
             event.ignore()
 
+    def clearName(self):
+        self.name.setText("請輸入暱稱，至多5個字元")
+        self.name.setStyleSheet("color: rgb(192,192,192)")
 
+    def eventFilter(self, QObject, QEvent):
+        if QEvent.type() == QEvent.MouseButtonPress:
+            if QObject==self.name:
+                if self.name.text() == "請輸入暱稱，至多5個字元":
+                        self.name.setText("")
+                        self.name.setStyleSheet("color: rgb(0,0,0);background-color: rgb(255,255,255)")
+            if QObject==self.chat:
+                if self.chat.text() == "輸入發送內容，空白時無法發送":
+                    if self.chat.isEnabled()==True:
+                        self.chat.setText("")
+                        self.chat.setStyleSheet("color: rgb(0,0,0);background-color: rgb(255,255,255)")
+        if QEvent.type() == QEvent.FocusOut:
+            if QObject==self.name:
+                if self.name.text()=="":
+                    self.name.setText("請輸入暱稱，至多5個字元")
+                    self.name.setStyleSheet("color: rgb(192,192,192);background-color: rgb(255,255,255)")
+            if QObject==self.chat:
+                if self.chat.text() == "":
+                    self.chat.setText("輸入發送內容，空白時無法發送")
+                    self.chat.setStyleSheet("color: rgb(192,192,192);background-color: rgb(255,255,255)")
+        return super(QWidget, self).eventFilter(QObject, QEvent)
+###
+class tooManyInput(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        # 設定文字和按鈕
+        okButton = QPushButton("確定")
+        inputmsg = QLabel("\t最多輸入200個字")
+
+
+        #設定layput方式
+        hbox = QHBoxLayout()
+        hbox.addWidget(okButton)
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(inputmsg)
+        vbox = QVBoxLayout()
+        vbox.addLayout(hbox2);
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+
+        #設定視窗參數
+        self.setFixedSize(300, 150)
+        self.setWindowTitle(' ')
+
+        okButton.clicked.connect(self.chlickLeave)
+
+    # 確定並關閉視窗和清空字串
+    def chlickLeave(self,evnt):
+        myPanel.chat.setText("")
+        self.close()
+
+class ClickableLineEdit(QLineEdit):
+    clicked = pyqtSignal()
+    def mousePressEvent(self, event):
+        self.clicked.emit()
+        QLineEdit.mousePressEvent(self, event)
+
+class tooManyChar(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        # 設定文字和按鈕
+        okButton = QPushButton("確定")
+        inputmsg = QLabel("\t最多輸入5個字元")
+
+
+        #設定layput方式
+        hbox = QHBoxLayout()
+        hbox.addWidget(okButton)
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(inputmsg)
+        vbox = QVBoxLayout()
+        vbox.addLayout(hbox2);
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+
+        #設定視窗參數
+        self.setFixedSize(300, 150)
+        self.setWindowTitle(' ')
+
+        okButton.clicked.connect(self.chlickLeave)
+
+    # 確定並關閉視窗和清空字串
+    def chlickLeave(self,evnt):
+        myPanel.name.setText("")
+        self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -279,4 +400,8 @@ if __name__ == "__main__":
     isLeave = 0
     # 午餐晚餐提醒視窗
     remindWindows = RemindWindows()
+    # 超過200字的視窗
+    inputWindow = tooManyInput()
+    nameInputWindow = tooManyChar()
     sys.exit(app.exec_())
+
