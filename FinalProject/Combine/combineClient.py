@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, 
 import time
 from PyQt5.QtCore import *
 from PyQt5.QtCore import pyqtSignal
+import textwrap
 
 
 # 寫檔用
@@ -17,7 +18,6 @@ class RemindWindows(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-
     def initUI(self):
         # 設定文字和按鈕
         outdoorButton = QPushButton("出去吃")
@@ -215,6 +215,7 @@ class MainWindow(QWidget):
 
         #設定showchar的滾動條
         self.showchat.setLineWrapMode(QTextEdit.NoWrap)
+        self.showchat.setFontFamily("consolas")
 
         #設定顏色
         self.showchat.setStyleSheet("background-color: rgb(255,255,255)")
@@ -252,8 +253,8 @@ class MainWindow(QWidget):
     def login(self):
         # 取得 輸入的 nickname
         text1 = self.name.text()
-        print("name="+text1)
-        if((len(text1)<=5)&(text1!="")):
+        #print("name="+text1)
+        if((len(text1)<=5)&(text1!="")&(text1!="請輸入暱稱，至多5個字元")):
             self.name.setEnabled(False)
             self.chat.setEnabled(True)
             self.button_send.setEnabled(True)
@@ -267,12 +268,19 @@ class MainWindow(QWidget):
 
     def showText(self):
         #　將值傳給server
-        if((len(self.chat.text())<=200)&(self.chat.text()!="")):
+        if((len(self.chat.text())<=200)&(self.chat.text()!="")&(self.chat.text()!="輸入發送內容，空白時無法發送")):
             self.sock.send(self.chat.text().encode())
             #  同時將自己輸入的值印在chat上
             st = time.localtime(time.time())
             times = time.strftime('[%H:%M:%S]', st)
-            self.showchat.append("\t" + times + self.chat.text() + " : You " )
+            user = "You"
+            prefix = "                         " + times + user + ": "
+            preferredWidth = 50
+            text = self.chat.text()
+            wrapper = textwrap.TextWrapper(initial_indent= prefix, width=preferredWidth,
+                                           subsequent_indent=' ' * (len(prefix)))
+            msg = wrapper.fill(text)
+            self.showchat.append(msg)
             global writeMsg
             writeMsg += "\n\t" + times + self.chat.text() + " : You "  # 寫檔用
             self.chat.setText("")
