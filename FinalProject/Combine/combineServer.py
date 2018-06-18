@@ -53,9 +53,7 @@ class Server:
         self.mylist.append(myconnection)
         myconnection.send(massage.encode())
 
-
-
-        massage1 = ("SYSTEM: "+nickname+ " in the chat room")
+        massage1 = ("SYSTEM: "+ nickname + " in the chat room")
         global a
         global temp_a
         a += 1
@@ -76,19 +74,39 @@ class Server:
                 recvedMsg = myconnection.recv(1024).decode()#抓輸入
 
                 if recvedMsg:
-                    self.tellOthers(connNumber, recvedMsg,nickname)
-
-                    # 將訊息給 bot
-                    botMsg = self.littleBot(recvedMsg)
-                    random_value = random.randint(3, 9)
-                    if random_value % 3 == 0:
+                    if(recvedMsg == "出去吃"):
                         #先送一份給自己
                         st = time.localtime(time.time())
                         times = time.strftime('[%H:%M:%S]', st)
-                        massage = ("bot"+ ":  " +botMsg + "     " + times)
+                        massage = ("小廚師"+ ":  你想出去吃，推薦你   " + times)
                         myconnection.send(massage.encode())
-                        # 傳給其他人
-                        self.tellOthers(connNumber, botMsg,"bot")
+                        massage = ("@" +nickname + "想出去吃，推薦他   " )
+                        #送給別人
+                        self.tellOthers(connNumber, massage,"小廚師")
+                        recvedMsg = "@小廚師想吃什麼?"
+                    elif(recvedMsg == "自己煮"):
+                        #先送一份給自己
+                        st = time.localtime(time.time())
+                        times = time.strftime('[%H:%M:%S]', st)
+                        massage = ("小廚師"+ ":  你想自己煮，推薦你   " + times)
+                        myconnection.send(massage.encode())
+                        massage = ("@" +nickname + "想自己煮，推薦他   " )
+                        #送給別人
+                        self.tellOthers(connNumber, massage,"小廚師")
+                        recvedMsg = "@小廚師自己煮?"
+                    else:
+                        self.tellOthers(connNumber, recvedMsg,nickname)
+                        # 將訊息給 bot
+                        botMsg = self.littleBot(recvedMsg)
+                        random_value = random.randint(3, 9)
+                        if random_value % 3 == 0:
+                            # 先送一份給自己
+                            st = time.localtime(time.time())
+                            times = time.strftime('[%H:%M:%S]', st)
+                            massage = ("bot"+ ":  " +botMsg + "     " + times)
+                            myconnection.send(massage.encode())
+                            # 傳給其他人
+                            self.tellOthers(connNumber, botMsg,"bot")
 
                 else:
                     pass
@@ -96,7 +114,6 @@ class Server:
                 #如果有人tag小廚師
                 if recvedMsg.find("@小廚師",0,4)!= -1:
                     self.tellOthers(connNumber, self.littleChef(recvedMsg,myconnection),"小廚師")
-
 
             except (OSError, ConnectionResetError):
                 try:
@@ -118,7 +135,6 @@ class Server:
                                 print("in except")
                                 pass
 
-
                     self.mylist.remove(myconnection)
                 except:
                     pass
@@ -139,23 +155,22 @@ class Server:
                     pass
 
     # 小廚師回話
-    def littleChef(self,recvedMsg,myconnection):
-        print("in littleChef")
+    def littleChef(self, recvedMsg, myconnection):
         idontknow="想吃什麼"
         whatingredients="食材是"
         howtocook="做法是"
         x= recvedMsg.find(idontknow,len(recvedMsg)-5,len(recvedMsg)-1)        #判斷有沒有"想吃什麼?"這個詞
         y= recvedMsg.find(whatingredients,len(recvedMsg)-4,len(recvedMsg)-1)  #判斷有沒有"食材是?"這個詞
         z= recvedMsg.find(howtocook,len(recvedMsg)-4,len(recvedMsg)-1)        #判斷有沒有"做法是?"這個詞
+        cookmyself = recvedMsg.find("自己煮",len(recvedMsg)-4,len(recvedMsg)-1)
 
         returnValue = ""
 
         if x != -1:#output"吃什麼?
             returnValue = sheel_1.cell_value(rowx=random.randint(1,100),colx=0 )
             #myconnection.send( p.encode() )
-        elif y!= -1 :
-            get = ''
-            get= recvedMsg[4:len(recvedMsg)-4]
+        elif y != -1:
+            get = recvedMsg[4:len(recvedMsg)-4]
             for sheet in wb.sheets():#搜尋excel
                 for rowidx in range(sheet.nrows):
                     row = sheet.row(rowidx)
@@ -176,6 +191,28 @@ class Server:
                             print (colidx)
                             print(rowidx)
                             returnValue=sheel_1.cell_value(rowx=rowidx,colx=2 )
+        elif cookmyself !=1 :
+            dish = sheel_1.cell_value(rowx=random.randint(1,100),colx=0 )
+            returnValue = dish
+            returnValue += "\n"
+
+            for sheet in wb.sheets():#搜尋excel
+                for rowidx in range(sheet.nrows):
+                    row = sheet.row(rowidx)
+                    for colidx, cell in enumerate(row):
+                        if cell.value == dish:
+                            returnValue +=sheel_1.cell_value(rowx=rowidx,colx=1 )
+            returnValue += '\n'
+            gets = recvedMsg[4:len(recvedMsg) - 4]
+            for sheet in wb.sheets():#搜尋excel
+                for rowidx in range(sheet.nrows):
+                    row = sheet.row(rowidx)
+                    for colidx, cell in enumerate(row):
+                        if cell.value == dish:
+                            returnValue += sheel_1.cell_value(rowx=rowidx,colx=2 )
+
+            print("&&&")
+            print(returnValue)
         else :
             returnValue='我的菜單沒有'
 
@@ -187,15 +224,14 @@ class Server:
 
         return returnValue
 
-    def littleBot(self,recvedMsg):
+    def littleBot(self, recvedMsg):
         return HanziConv.toTraditional(self.chatterbot.get_response(recvedMsg).text)
+
 
 def main():
     s = Server('127.0.0.1', 5550)
     while True:
         s.checkConnection()
 
-
 if __name__ == "__main__":
     main()
-

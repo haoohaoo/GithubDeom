@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdi
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QTextEdit, QGridLayout, QApplication)
 import time
+from PyQt5.QtCore import *
 from PyQt5.QtCore import pyqtSignal
 
 
@@ -22,7 +23,7 @@ class RemindWindows(QWidget):
         outdoorButton = QPushButton("出去吃")
         selfCookButton = QPushButton("自己煮")
         cancelButton = QPushButton("取消")
-        leavemsg = QLabel("\t12點該吃飯囉！\n      想出去吃還是自己煮呢？")
+        self.leavemsg = QLabel("\t12點該吃飯囉！\n      想出去吃還是自己煮呢？")
 
 
         #設定layput方式
@@ -31,7 +32,7 @@ class RemindWindows(QWidget):
         hbox.addWidget(selfCookButton)
         hbox.addWidget(cancelButton)
         hbox2 = QHBoxLayout()
-        hbox2.addWidget(leavemsg)
+        hbox2.addWidget(self.leavemsg)
         vbox = QVBoxLayout()
         vbox.addLayout(hbox2);
         vbox.addLayout(hbox)
@@ -46,14 +47,16 @@ class RemindWindows(QWidget):
         selfCookButton.clicked.connect(self.checkSelfCook)
         cancelButton.clicked.connect(self.checkCancel)
 
-    def showWindows(self):
-        self.show()
     # 確認出去吃
     def checkOutdoor(self,evnt):
+        str = "出去吃"
+        myPanel.sock.send(str.encode())
         self.close()
 
     # 確認自己煮
     def checkSelfCook(self,evnt):
+        str = "自己煮"
+        myPanel.sock.send(str.encode())
         self.close()
 
     # 取消
@@ -106,7 +109,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super(self.__class__, self).__init__()
 
-        self.link_to_server('192.168.43.50', 5550) # 連線~~
+        self.link_to_server('127.0.0.1', 5550) # 連線~~
         self.setupUi()
 
         self.show()
@@ -118,6 +121,14 @@ class MainWindow(QWidget):
             t.setDaemon(True)
             t.start()
         t.join
+
+        self.eating = eatingThread()
+        self.eating.sec_changed_signal.connect(self.EatingRemained)
+        self.eating.start()
+
+    def EatingRemained(self,flag):
+        if flag == 1:
+            remindWindows.show()
 
     # 連線~~
     def link_to_server(self, host, port):
@@ -319,7 +330,8 @@ class MainWindow(QWidget):
                     self.chat.setText("輸入發送內容，空白時無法發送")
                     self.chat.setStyleSheet("color: rgb(192,192,192);background-color: rgb(255,255,255)")
         return super(QWidget, self).eventFilter(QObject, QEvent)
-###
+
+
 class tooManyInput(QWidget):
     def __init__(self):
         super().__init__()
@@ -391,6 +403,38 @@ class tooManyChar(QWidget):
     def chlickLeave(self,evnt):
         myPanel.name.setText("")
         self.close()
+
+# 提醒中餐午餐用
+class eatingThread(QThread):
+    sec_changed_signal = pyqtSignal(int) # 信号类型：int
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def run(self):
+        while True:
+            st = time.localtime(time.time())
+            times = time.strftime('%H%S', st)
+            if times == "1201":
+                remindWindows.leavemsg.setText("\t12點該吃飯囉！\n      想出去吃還是自己煮呢？")
+                self.sec_changed_signal.emit(1)  #发射信号
+                time.sleep(3600*4) # 休息4小時
+            elif times == "1801":
+                remindWindows.leavemsg.setText("\t18點該吃飯囉！\n      想出去吃還是自己煮呢？")
+                self.sec_changed_signal.emit(1)  #发射信号
+                time.sleep(3600*4) # 休息4小時
+            else:
+                self.sec_changed_signal.emit(0)  #发射信号
+            time.sleep(1)
+
+            b = 100
+            '''for i in range(b):
+                print(i)
+                if i == 5:
+                    self.sec_changed_signal.emit(1)  #发射信号
+                else:
+                    self.sec_changed_signal.emit(0)  #发射信号
+                time.sleep(1)'''
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
