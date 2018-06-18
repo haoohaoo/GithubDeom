@@ -14,6 +14,42 @@ import textwrap
 # 寫檔用
 writeMsg = ""
 
+class NotOnlineWindows(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        # 設定文字和按鈕
+        okButton = QPushButton("確定")
+        leavemsg = QLabel("\tBroken line, You can't chat?")
+
+
+        #設定layput方式
+        hbox = QHBoxLayout()
+        hbox.addWidget(okButton)
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(leavemsg)
+        vbox = QVBoxLayout()
+        vbox.addLayout(hbox2);
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+
+        #設定視窗參數
+        self.setFixedSize(300, 150)
+        self.setWindowTitle(' ')
+
+        okButton.clicked.connect(self.checkLeave)
+
+    # 確定要離開
+    def checkLeave(self,evnt):
+        global isLeave
+        isLeave = 1
+        myPanel.close()
+        self.close()
+
+
 class RemindWindows(QWidget):
     def __init__(self):
         super().__init__()
@@ -115,8 +151,9 @@ class MainWindow(QWidget):
         self.show()
 
         th1 = threading.Thread(target=self.sendThreadFunc)
-        th2 = threading.Thread(target=self.recvThreadFunc)
-        threads = [th1, th2]
+        #th2 = threading.Thread(target=self.recvThreadFunc)
+        #threads = [th1, th2]
+        threads = [th1]
         for t in threads:
             t.setDaemon(True)
             t.start()
@@ -125,6 +162,18 @@ class MainWindow(QWidget):
         self.eating = eatingThread()
         self.eating.sec_changed_signal.connect(self.EatingRemained)
         self.eating.start()
+
+        self.recvThread = GetMessage()
+        self.recvThread.isbrokenet.connect(self.BrokenNetwork)
+        self.recvThread.start()
+
+        self.flagofbreaknet = 0
+
+    def BrokenNetwork(self,flag):
+        if self.flagofbreaknet == 0:
+            if flag == 0:
+                breakline.show()
+                self.flagofbreaknet = 1
 
     def EatingRemained(self,flag):
         if flag == 1:
@@ -147,7 +196,7 @@ class MainWindow(QWidget):
             except ConnectionResetError:
                 print('Server is closed!')
 
-    def recvThreadFunc(self):
+    '''def recvThreadFunc(self):
         global writeMsg
         while True:
             try:
@@ -172,6 +221,7 @@ class MainWindow(QWidget):
 
             except ConnectionResetError:
                 print('Server is closed!')
+                self.online.show()'''
 
 
     def setupUi(self):
@@ -300,10 +350,6 @@ class MainWindow(QWidget):
         file.writelines(writeMsg)
         # 關閉檔案
         file.close()
-
-    '''def mousePressEvent(self, event):
-        self.name.setText("")'''
-
 
     def closeEvent(self, event):
         if(isLeave == 1):
@@ -434,14 +480,39 @@ class eatingThread(QThread):
                 self.sec_changed_signal.emit(0)  #发射信号
             time.sleep(1)
 
-            b = 100
-            '''for i in range(b):
-                print(i)
-                if i == 5:
-                    self.sec_changed_signal.emit(1)  #发射信号
-                else:
-                    self.sec_changed_signal.emit(0)  #发射信号
-                time.sleep(1)'''
+
+class GetMessage(QThread):
+    isbrokenet = pyqtSignal(int) # 信号类型：int
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def run(self):
+        global writeMsg
+        while True:
+            try:
+                otherword = myPanel.sock.recv(1024) # socket.recv(recv_size)
+                t = otherword.decode()
+                myPanel.showchat.append(t)
+                writeMsg += "\n" + t # 寫檔用
+                if(" people in the chat room"in t):
+                    print("有人進出")
+                    size = len(t)-32
+                    a = 0
+                    for i in range(size):
+                        b = size-i-1
+                        if(b<=0):
+                            a += (int(t[8]))
+                        else:
+                            a += (int(t[8]))*(10^(size-i-1))
+                    myPanel.labe_Number_of_people.setText("目前聊天室有" + str(a) + "人")
+                self.isbrokenet.emit(1)  #发射信号
+
+            except ConnectionAbortedError:
+                print('Server closed this connection!')
+
+            except ConnectionResetError:
+                self.isbrokenet.emit(0)  #发射信号
+                print('Server is closed!')
 
 
 if __name__ == "__main__":
@@ -455,5 +526,8 @@ if __name__ == "__main__":
     # 超過200字的視窗
     inputWindow = tooManyInput()
     nameInputWindow = tooManyChar()
+    # 斷網提示用
+    breakline = NotOnlineWindows()
+
     sys.exit(app.exec_())
 
