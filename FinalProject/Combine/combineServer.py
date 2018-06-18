@@ -3,7 +3,7 @@ import socket
 import threading
 import time
 from chatterbot import ChatBot
-import random
+from hanziconv import HanziConv
 
 #fooddata
 from xlrd import open_workbook
@@ -188,7 +188,7 @@ class Server:
         return returnValue
 
     def littleBot(self,recvedMsg):
-        return self.chatterbot.get_response(recvedMsg).text
+        return HanziConv.toTraditional(self.chatterbot.get_response(recvedMsg).text)
 
 def main():
     s = Server('127.0.0.1', 5550)
