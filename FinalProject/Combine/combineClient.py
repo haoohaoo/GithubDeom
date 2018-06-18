@@ -22,7 +22,7 @@ class NotOnlineWindows(QWidget):
     def initUI(self):
         # 設定文字和按鈕
         okButton = QPushButton("確定")
-        leavemsg = QLabel("\tBroken line, You can't chat?")
+        leavemsg = QLabel("\tBroken line, You can't chat!")
 
 
         #設定layput方式
