@@ -4,6 +4,7 @@ import threading
 import time
 from chatterbot import ChatBot
 from hanziconv import HanziConv
+import textwrap
 
 #fooddata
 from xlrd import open_workbook
@@ -103,8 +104,15 @@ class Server:
                             # 先送一份給自己
                             st = time.localtime(time.time())
                             times = time.strftime('[%H:%M:%S]', st)
-                            massage = ("bot"+ ":  " +botMsg + "     " + times)
-                            myconnection.send(massage.encode())
+                            user = "bot"
+                            prefix = user + ": "
+                            preferredWidth = len(prefix) + 10
+                            wrapper = textwrap.TextWrapper(initial_indent=prefix, width=preferredWidth,
+                                                           subsequent_indent=' ' * (len(prefix)))
+                            massage = wrapper.fill(botMsg)
+                            massage1 = "bot: " + botMsg[:10] + " " + times
+                            msg = massage1 + massage[15:]
+                            myconnection.send(msg.encode())
                             # 傳給其他人
                             self.tellOthers(connNumber, botMsg,"bot")
 
@@ -148,7 +156,15 @@ class Server:
             if c.fileno() != exceptNum:
                 st = time.localtime(time.time())
                 times = time.strftime('[%H:%M:%S]', st)
-                massage = (nickname+ ":  " +whatToSay + "     " + times)
+                user = nickname
+                prefix = user + ": "
+                preferredWidth = len(prefix) + 10
+                wrapper = textwrap.TextWrapper(initial_indent=prefix, width=preferredWidth,
+                                               subsequent_indent=' ' * (len(prefix)))
+                msg = wrapper.fill(whatToSay)
+                massage1 = nickname + ": " + whatToSay[:10] + " " + times
+                length = len(nickname) + 2 + 10
+                massage = massage1 + msg[length:]
                 try:
                     c.send(massage.encode())
                 except:
@@ -156,71 +172,92 @@ class Server:
 
     # 小廚師回話
     def littleChef(self, recvedMsg, myconnection):
-        idontknow="想吃什麼"
-        whatingredients="食材是"
-        howtocook="做法是"
-        x= recvedMsg.find(idontknow,len(recvedMsg)-5,len(recvedMsg)-1)        #判斷有沒有"想吃什麼?"這個詞
-        y= recvedMsg.find(whatingredients,len(recvedMsg)-4,len(recvedMsg)-1)  #判斷有沒有"食材是?"這個詞
-        z= recvedMsg.find(howtocook,len(recvedMsg)-4,len(recvedMsg)-1)        #判斷有沒有"做法是?"這個詞
-        cookmyself = recvedMsg.find("自己煮",len(recvedMsg)-4,len(recvedMsg)-1)
+        idontknow = "想吃什麼"
+        whatingredients = "食材是"
+        howtocook = "做法是"
+        x = recvedMsg.find(idontknow, len(recvedMsg) - 5, len(recvedMsg) - 1)  # 判斷有沒有"想吃什麼?"這個詞
+        y = recvedMsg.find(whatingredients, len(recvedMsg) - 4, len(recvedMsg) - 1)  # 判斷有沒有"食材是?"這個詞
+        z = recvedMsg.find(howtocook, len(recvedMsg) - 4, len(recvedMsg) - 1)  # 判斷有沒有"做法是?"這個詞
+        cookmyself = recvedMsg.find("自己煮", len(recvedMsg) - 4, len(recvedMsg) - 1)
 
         returnValue = ""
+        dish = ""
 
-        if x != -1:#output"吃什麼?
-            returnValue = sheel_1.cell_value(rowx=random.randint(1,100),colx=0 )
-            #myconnection.send( p.encode() )
+        timeYes = False
+        st = time.localtime(time.time())
+        times = time.strftime('[%H:%M:%S]', st)
+
+        if x != -1:  # output"吃什麼?
+            returnValue = sheel_1.cell_value(rowx=random.randint(1, 100), colx=0)
+            # myconnection.send( p.encode() )
         elif y != -1:
-            get = recvedMsg[4:len(recvedMsg)-4]
-            for sheet in wb.sheets():#搜尋excel
+            get = recvedMsg[4:len(recvedMsg) - 4]
+            for sheet in wb.sheets():  # 搜尋excel
                 for rowidx in range(sheet.nrows):
                     row = sheet.row(rowidx)
                     for colidx, cell in enumerate(row):
                         if cell.value == get:
-                            print (colidx)
+                            print(colidx)
                             print(rowidx)
-                            returnValue=sheel_1.cell_value(rowx=rowidx,colx=1 )
-                            #myconnection.send(q.encode() )#output"食材是?"
-        elif z!=-1 :
+                            returnValue = sheel_1.cell_value(rowx=rowidx, colx=1)
+                            # myconnection.send(q.encode() )#output"食材是?"
+        elif z != -1:
             gets = ''
             gets = recvedMsg[4:len(recvedMsg) - 4]
-            for sheet in wb.sheets():#搜尋excel
+            for sheet in wb.sheets():  # 搜尋excel
                 for rowidx in range(sheet.nrows):
                     row = sheet.row(rowidx)
                     for colidx, cell in enumerate(row):
                         if cell.value == gets:
-                            print (colidx)
+                            print(colidx)
                             print(rowidx)
-                            returnValue=sheel_1.cell_value(rowx=rowidx,colx=2 )
-        elif cookmyself !=1 :
-            dish = sheel_1.cell_value(rowx=random.randint(1,100),colx=0 )
+                            returnValue = sheel_1.cell_value(rowx=rowidx, colx=2)
+        elif cookmyself != 1:
+            timeYes = True
+            dish = sheel_1.cell_value(rowx=random.randint(1, 100), colx=0)
             returnValue = dish
-            returnValue += "\n"
+            returnValue += " "
 
-            for sheet in wb.sheets():#搜尋excel
+            for sheet in wb.sheets():  # 搜尋excel
                 for rowidx in range(sheet.nrows):
                     row = sheet.row(rowidx)
                     for colidx, cell in enumerate(row):
                         if cell.value == dish:
-                            returnValue +=sheel_1.cell_value(rowx=rowidx,colx=1 )
+                            returnValue += sheel_1.cell_value(rowx=rowidx, colx=1)
             returnValue += '\n'
             gets = recvedMsg[4:len(recvedMsg) - 4]
-            for sheet in wb.sheets():#搜尋excel
+            for sheet in wb.sheets():  # 搜尋excel
                 for rowidx in range(sheet.nrows):
                     row = sheet.row(rowidx)
                     for colidx, cell in enumerate(row):
                         if cell.value == dish:
-                            returnValue += sheel_1.cell_value(rowx=rowidx,colx=2 )
+                            returnValue += sheel_1.cell_value(rowx=rowidx, colx=2)
 
             print("&&&")
             print(returnValue)
-        else :
-            returnValue='我的菜單沒有'
 
-         #先送一份給自己
-        st = time.localtime(time.time())
-        times = time.strftime('[%H:%M:%S]', st)
-        massage = ("小廚師"+ ":  " +returnValue + "     " + times)
-        myconnection.send(massage.encode())
+
+        else:
+            returnValue = '我的菜單沒有'
+
+        # 先送一份給自己
+
+        user = "小廚師"
+        prefix = user + ": "
+        preferredWidth = len(prefix) + 10
+        wrapper = textwrap.TextWrapper(initial_indent=prefix, width=preferredWidth,
+                                       subsequent_indent='　　　  ')
+        massage = wrapper.fill(returnValue)
+        massage1 = "小廚師: " + returnValue[:10] + " " + times
+        msg = massage1 + massage[15:]
+
+        '''if timeYes==True:
+            if(len(dish)<=10):
+                massage1 = "小廚師: " + dish + " " + times + "\n"
+                dishlen = len(dish)+7
+                msg = massage1 + massage[dishlen:]'''
+
+        myconnection.send(msg.encode())
 
         return returnValue
 
