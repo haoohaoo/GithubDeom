@@ -242,14 +242,17 @@ class Server:
 
         # 先送一份給自己
 
-        user = "小廚師"
-        prefix = user + ": "
+        user = '小廚師'
+        prefix = user + ': '
         preferredWidth = len(prefix) + 10
         wrapper = textwrap.TextWrapper(initial_indent=prefix, width=preferredWidth,
                                        subsequent_indent='　　　  ')
         massage = wrapper.fill(returnValue)
-        massage1 = "小廚師: " + returnValue[:10] + " " + times
-        msg = massage1 + massage[15:]
+        massage1 = '小廚師: ' + returnValue[:10] + ' ' + times
+        if massage[15]!='\n':
+            msg = massage1 + '\n' + massage[15:]
+        else:
+            msg = massage1 +massage[15:]
 
         '''if timeYes==True:
             if(len(dish)<=10):
