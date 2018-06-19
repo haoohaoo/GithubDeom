@@ -47,6 +47,7 @@ class NotOnlineWindows(QWidget):
         global isLeave
         isLeave = 1
         myPanel.close()
+        app.closeAllWindows()
         self.close()
 
 
@@ -135,6 +136,7 @@ class CheckLeaveWindows(QWidget):
         global isLeave
         isLeave = 1
         myPanel.close()
+        app.closeAllWindows()
         self.close()
 
     # 不要離開
@@ -225,47 +227,54 @@ class MainWindow(QWidget):
 
 
     def setupUi(self):
-        self.resize(500,500)
+        self.resize(700,700)
         self.setWindowTitle("ChatRoom")
 
         self.labe_Number_of_people = QLabel()
         self.labe_Number_of_people.setStyleSheet("color: rgb(255,255,255)")
-        self.labe_Number_of_people.setFont(QFont('SansSerif', 14))
-        self.labe_Number_of_people.setText("目前聊天室有0人")         #目前人數lable
-
+        self.labe_Number_of_people.setFont(QFont('consolas',14,weight=QFont.Bold))
+        #self.labe_Number_of_people.setStyleSheet("background-color: rgb(153, 153, 153)")
+        self.labe_Number_of_people.setText("\t目前聊天室有0人！")         #目前人數lable
         self.label = QLabel()
         self.label.setText("Chat Name: ")
+        self.label.setFont(QFont('consolas',12))
 
 
         self.button_Login = QPushButton()
         self.button_Login.setText("Enter")
-        self.button_Login.setStyleSheet("background-color: rgb(255, 189, 255)")
+        self.button_Login.setStyleSheet("background-color: rgb(102, 153, 255)")
+        self.button_Login.setFont(QFont('consolas',12))
 
         self.button_clear = QPushButton()
         self.button_clear.setText("Clear")
-        self.button_clear.setStyleSheet("background-color: rgb(255, 189, 255)")
+        self.button_clear.setStyleSheet("background-color: rgb(102, 153, 255)")
+        self.button_clear.setFont(QFont('consolas',12))
 
         self.button_send = QPushButton()
-
+        self.button_send.setFont(QFont('consolas',12))
 
         self.button_send = QPushButton("Send") # b3不可按
         self.button_send.setStyleSheet("background-color: rgb(153, 153, 153)")
         self.button_send.setText("Send")
-        self.button_send.setStyleSheet("color: rgb(255, 189, 255)")
+        self.button_send.setStyleSheet("background-color: rgb(102, 153, 255)")
         self.button_send.setEnabled(False)
+        self.button_send.setFont(QFont('consolas',12))
         self.button_Login.setEnabled(True)
 
         self.name = QLineEdit()
         self.name.setStyleSheet("color: rgb(192,192,192)")
+        self.name.setFont(QFont('consolas', 12))
         self.showchat = QTextEdit()#show內容
         self.chat = QLineEdit()#輸入內容
         self.chat.setStyleSheet("color: rgb(192,192,192)")
         self.chat.setText("輸入發送內容，空白時無法發送")
         self.chat.setEnabled(False)
+        self.chat.setFont(QFont('consolas',12))
+
 
         #設定showchar的滾動條
         self.showchat.setLineWrapMode(QTextEdit.NoWrap)
-        self.showchat.setFontFamily("consolas")
+        self.showchat.setFont(QFont('consolas',12))
 
         #設定顏色
         self.showchat.setStyleSheet("background-color: rgb(255,255,255)")
@@ -273,14 +282,14 @@ class MainWindow(QWidget):
         self.name.setStyleSheet("background-color: rgb(255,255,255)")
 
         grid = QGridLayout()
-        grid.setSpacing(12)
-        grid.addWidget(self.labe_Number_of_people, 0, 1)        #秀出目前人數
-        grid.addWidget(self.label, 1, 0)
-        grid.addWidget(self.name, 1, 1)
-        grid.addWidget(self.button_Login, 1, 3)
-        grid.addWidget(self.button_clear, 1, 4)
-        grid.addWidget(self.showchat, 4, 0, 3, 5)
-        grid.addWidget(self.chat, 6, 0, 3, 4)
+        #grid.setSpacing(11)
+        grid.addWidget(self.labe_Number_of_people, 0, 1, 1,3)        #秀出目前人數
+        grid.addWidget(self.label, 1, 0,1,1)
+        grid.addWidget(self.name, 1, 1,1,2)
+        grid.addWidget(self.button_Login, 1, 3,1,1)
+        grid.addWidget(self.button_clear, 1, 4,1,1)
+        grid.addWidget(self.showchat, 2, 0, 5, 5)
+        grid.addWidget(self.chat, 7, 0, 1, 4)
         grid.addWidget(self.button_send, 7, 4, 1, 1)
 
 
@@ -324,8 +333,8 @@ class MainWindow(QWidget):
             st = time.localtime(time.time())
             times = time.strftime('[%H:%M:%S]', st)
             user = "You"
-            prefix = "                         " + times + user + ": "
-            preferredWidth = 50
+            prefix = "                         " + times +" "+ user + ": "
+            preferredWidth = 51
             text = self.chat.text()
             wrapper = textwrap.TextWrapper(initial_indent= prefix, width=preferredWidth,
                                            subsequent_indent=' ' * (len(prefix)))
@@ -391,6 +400,7 @@ class tooManyInput(QWidget):
         super().__init__()
         self.initUI()
 
+
     def initUI(self):
         # 設定文字和按鈕
         okButton = QPushButton("確定")
@@ -413,6 +423,8 @@ class tooManyInput(QWidget):
         self.setWindowTitle(' ')
 
         okButton.clicked.connect(self.chlickLeave)
+
+
 
     # 確定並關閉視窗和清空字串
     def chlickLeave(self,evnt):
@@ -504,7 +516,7 @@ class GetMessage(QThread):
                             a += (int(t[8]))
                         else:
                             a += (int(t[8]))*(10^(size-i-1))
-                    myPanel.labe_Number_of_people.setText("目前聊天室有" + str(a) + "人")
+                    myPanel.labe_Number_of_people.setText("\t目前聊天室有" + str(a) + "人！")
                 self.isbrokenet.emit(1)  #发射信号
 
             except ConnectionAbortedError:
